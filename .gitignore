@@ -1,0 +1,57 @@
+# Environments
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# Dependency directories
+node_modules/
+frontend/node_modules/
+backend/venv/
+backend/.venv/
+env/
+venv/
+.venv/
+
+# Build outputs
+.next/
+frontend/.next/
+build/
+dist/
+out/
+backend/__pycache__/
+*/__pycache__/
+*.pyc
+
+# Local databases
+*.db
+backend/gridlock_local.db
+gridlock_local.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary files and logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+backend/debug.log
+logs/
+*.log
+
+# Personal files & Screenshots
+WhatsApp Image*
+*.jpeg
+*.jpg
+*.png

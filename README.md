@@ -4,6 +4,19 @@ An AI-driven operations command center designed to forecast traffic incident sev
 
 ---
 
+## 📂 Project Documentation Index
+
+For detailed, deep-dive architectural documents, deployment guides, and training methodology, please refer to the files in the **[docs/](file:///c:/Users/vbhan/Downloads/flipkart-hack/docs/)** directory:
+
+* **[docs/setup_guide.md](file:///c:/Users/vbhan/Downloads/flipkart-hack/docs/setup_guide.md)**: Local installation, database setup guide, and uvicorn/node.js startup logs.
+* **[docs/model_approach.md](file:///c:/Users/vbhan/Downloads/flipkart-hack/docs/model_approach.md)**: CatBoost model selection rationale, Ordered Target Encoding preprocessor details, and the Impact Score mathematical formula.
+* **[docs/system_architecture.md](file:///c:/Users/vbhan/Downloads/flipkart-hack/docs/system_architecture.md)**: Relational PostgreSQL schema details, optimization indexes, and module layouts.
+* **[docs/detailed_architecture.md](file:///c:/Users/vbhan/Downloads/flipkart-hack/docs/detailed_architecture.md)**: Block diagrams, network port mappings, and API schemas.
+* **[docs/production_roadmap.md](file:///c:/Users/vbhan/Downloads/flipkart-hack/docs/production_roadmap.md)**: Architectural enhancements for production, load balancers, caching, message brokers, and PostGIS scaling.
+* **[docs/deployment_guide.md](file:///c:/Users/vbhan/Downloads/flipkart-hack/docs/deployment_guide.md)**: Pushing to GitHub, Web service configuration on Render, and client builds on Vercel.
+
+---
+
 ## 1. Project Overview & Capabilities Matrix
 
 Due to the physical constraints of the provided dataset, **Gridlock.AI** targets incident-based classification, severity forecasting, and historical hotspot analysis rather than direct time-series telemetry forecasting.
@@ -29,7 +42,35 @@ The table below outlines our model's current features based on the provided data
 
 ---
 
-## 2. Core Technological Stack
+## 2. How Gridlock.AI Works (End-to-End Workflow)
+
+The platform evaluates, dispatches, and tracks incident-based congestion hotspots through a 5-step operational workflow:
+
+```mermaid
+flowchart LR
+    A[1. Simulator Input] --> B[2. CatBoost Inference]
+    B --> C[3. Resource Dispatch]
+    C --> D[4. Dynamic Hotspot UPSERT]
+    D --> E[5. Map HUD Overlay]
+```
+
+1. **Incident Simulation (Dispatcher Input)**:
+   * The operator logs an incident (Planned/Unplanned) on the frontend form, specifying coordinates, junction name, corridor, zone, road closure requirements, and the types of vehicles involved.
+2. **AI Impact Evaluation (FastAPI + CatBoost)**:
+   * The backend processes the input, extracts cyclical temporal variables (`hour`, `dayofweek`, `month`, `is_weekend`), and runs CatBoost evaluation. 
+   * It calculates the **Severity Score (0.0 to 1.0)** based on the class probability matrix.
+3. **Remediation Action Plan (Rules Engine)**:
+   * Based on the predicted impact level (Low/Medium/High/Critical), the API reads the resource mapping engine (`resource_map.json`) to automatically allocate recommended quantities of **police officers**, **physical barricades**, and determine if a **road diversion** is mandatory.
+4. **Dynamic Hotspot Scoring (PostgreSQL UPSERT)**:
+   * The database client saves the transaction records. 
+   * It performs an **UPSERT** on the `hotspot_scores` table for the junction: if the junction was targeted in previous incidents, the database dynamically updates the congestion index by calculating the **running average** of all historical severity scores and increments the incident count.
+5. **Real-time Map HUD (Leaflet Visualization)**:
+   * The frontend pulls the ranked hotspots and overlays circle markers on OpenStreetMap.
+   * Circle radii and warning colors scale dynamically based on the calculated severity indices, highlighting active gridlock zones in real time.
+
+---
+
+## 3. Core Technological Stack
 
 The platform is built using a modern, decoupled three-tier architecture:
 
@@ -40,7 +81,7 @@ The platform is built using a modern, decoupled three-tier architecture:
 
 ---
 
-## 3. System Modules & Approaches
+## 4. System Modules & Approaches
 
 ### 1. The Machine Learning Engine (CatBoost)
 * **Categorical Boosting**: We selected CatBoost because our geographic datasets are dominated by high-cardinality categorical attributes (`junction`, `zone`, `corridor`). Instead of sparse one-hot encoding, CatBoost handles categories natively using **Ordered Target Encoding**.
@@ -64,7 +105,7 @@ Exposes the following JSON endpoints:
 
 ---
 
-## 4. Local Setup & Execution Guide
+## 5. Local Setup & Execution Guide
 
 Follow these steps to launch the entire platform on your local machine:
 
@@ -102,7 +143,7 @@ npm run dev
 
 ---
 
-## 5. End-to-End System Architecture Diagrams
+## 6. End-to-End System Architecture Diagrams
 
 ### System Block Diagram
 ```mermaid

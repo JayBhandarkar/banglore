@@ -4,5 +4,5 @@ catboost==1.2.3
 pandas==2.2.1
 numpy==1.26.4
 supabase==2.31.0
-pydantic==2.6.4
+pydantic>=2.11.7
 python-dotenv==1.0.1

@@ -107,26 +107,26 @@ npm run dev
 ### System Block Diagram
 ```mermaid
 flowchart TB
-    subgraph Client_Browser [Client Environment (Localhost / Port 3000)]
-        FE_APP[Next.js Frontend App]
-        LEAFLET[Leaflet Map HUD]
-        RECHARTS[Recharts Dashboard]
+    subgraph Client_Browser ["Client Environment (Localhost / Port 3000)"]
+        FE_APP["Next.js Frontend App"]
+        LEAFLET["Leaflet Map HUD"]
+        RECHARTS["Recharts Dashboard"]
     end
 
-    subgraph Backend_Server [Application Server (Localhost / Port 8000)]
-        API_ROUTER[FastAPI REST API]
-        MODEL_INF[CatBoost Classifier]
-        DB_CONNECTOR[Database Client Wrapper]
-        RESOURCES[resource_map.json]
+    subgraph Backend_Server ["Application Server (Localhost / Port 8000)"]
+        API_ROUTER["FastAPI REST API"]
+        MODEL_INF["CatBoost Classifier"]
+        DB_CONNECTOR["Database Client Wrapper"]
+        RESOURCES["resource_map.json"]
     end
 
-    subgraph Data_Storage [Data Tier]
-        SUPABASE[(Supabase PostgreSQL)]
-        SQLITE[(SQLite Fallback DB)]
+    subgraph Data_Storage ["Data Tier"]
+        SUPABASE[("Supabase PostgreSQL")]
+        SQLITE[("SQLite Fallback DB")]
     end
 
     FE_APP -- "HTTPS / REST JSON" --> API_ROUTER
-    LEAFLET -- "HTTP Tiles" --> OpenStreetMap[OpenStreetMap]
+    LEAFLET -- "HTTP Tiles" --> OpenStreetMap["OpenStreetMap"]
     API_ROUTER -- "Internal Calls" --> MODEL_INF
     API_ROUTER -- "Reads Rules" --> RESOURCES
     API_ROUTER -- "DB Access" --> DB_CONNECTOR

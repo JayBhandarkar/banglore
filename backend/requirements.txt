@@ -3,6 +3,6 @@ uvicorn==0.28.0
 catboost==1.2.3
 pandas==2.2.1
 numpy==1.26.4
-supabase==2.3.0
+supabase==2.31.0
 pydantic==2.6.4
 python-dotenv==1.0.1

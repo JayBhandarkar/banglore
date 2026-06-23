@@ -1,0 +1,1 @@
+{"Low": {"police": 2, "barricades": 4, "diversion": "No"}, "Medium": {"police": 5, "barricades": 10, "diversion": "Partial"}, "High": {"police": 10, "barricades": 20, "diversion": "Required"}, "Critical": {"police": 20, "barricades": 40, "diversion": "Mandatory"}}

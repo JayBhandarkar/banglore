@@ -1,7 +1,7 @@
 @echo off
 title Gridlock.AI Launcher
 echo ===================================================
-echo   Gridlock.AI Traffic Remediation & Prediction API
+echo   Gridlock.AI Traffic Remediation ^& Prediction API
 echo   Launcher Script (Windows)
 echo ===================================================
 echo.

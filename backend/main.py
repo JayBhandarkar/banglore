@@ -1,5 +1,8 @@
 import os
 import json
+import asyncio
+import threading
+import time
 from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,10 +61,22 @@ class SimulationInput(BaseModel):
     start_datetime: Optional[str] = None
     closed_datetime: Optional[str] = None
 
+def db_sync_loop():
+    """Background loop checking and syncing local offline database events to remote cloud."""
+    print("[Background Sync] Periodic synchronization worker initialized.")
+    while True:
+        try:
+            db_client.sync_local_db_to_supabase()
+        except Exception as e:
+            print(f"[Background Sync Error] Execution failed: {e}")
+        time.sleep(30)
+
 @app.on_event("startup")
 def startup_event():
     # Pre-initialize Database
     db_client.init_db()
+    # Start periodic DB sync thread
+    threading.Thread(target=db_sync_loop, daemon=True).start()
     # Pre-load CatBoost Model
     try:
         model_handler.load_model()
@@ -77,16 +92,16 @@ def read_root():
     }
 
 @app.post("/api/predict")
-def run_simulation(payload: SimulationInput):
+async def run_simulation(payload: SimulationInput):
     """
     Ingests traffic incident attributes, executes prediction, computes resource 
-    recommendations, saves to database, and writes audit record.
+    recommendations using proximity-based dispatch, saves to database, and writes audit record.
     """
     input_data = payload.dict()
     
-    # 1. Generate model prediction
+    # 1. Generate model prediction asynchronously in thread pool to prevent event loop blocking
     try:
-        prediction = model_handler.predict_traffic_impact(input_data)
+        prediction = await asyncio.to_thread(model_handler.predict_traffic_impact, input_data)
     except Exception as e:
         db_client.log_audit("PREDICTION_ERROR", f"Prediction execution failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Model prediction error: {str(e)}")
@@ -103,17 +118,19 @@ def run_simulation(payload: SimulationInput):
         "diversion_strategy": allocation.get("diversion", "Partial")
     }
     
-    # 3. Synchronize database insertion
+    # 3. Synchronize database insertion and proximity dispatch
     try:
         db_ids = db_client.save_simulation(
             event_data={**input_data, "duration_minutes": prediction["duration_minutes"]},
             prediction_data={"predicted_impact_level": predicted_level, "impact_score": impact_score},
             resource_plan_data=resource_plan
         )
+        dispatched_resources = db_ids.pop("dispatched_resources", {"officers": [], "barricades": []})
     except Exception as e:
         db_client.log_audit("DATABASE_SYNC_ERROR", f"Failed saving simulation outputs: {str(e)}")
         # Continue and return predictions even if saving fails (graceful degradation)
         db_ids = {"event_id": None, "prediction_id": None, "resource_plan_id": None}
+        dispatched_resources = {"officers": [], "barricades": []}
         print(f"[API ERROR] Failed to save simulation: {e}")
         
     return {
@@ -123,7 +140,10 @@ def run_simulation(payload: SimulationInput):
             "impact_score": impact_score,
             "probabilities": prediction["probabilities"]
         },
-        "recommendation": resource_plan,
+        "recommendation": {
+            **resource_plan,
+            "dispatched_resources": dispatched_resources
+        },
         "database_records": db_ids
     }
 
@@ -163,5 +183,14 @@ def get_system_audit_logs(limit: int = 100):
     return {
         "success": True,
         "count": len(data),
+        "data": data
+    }
+
+@app.get("/api/resources")
+def get_system_resources():
+    """Retrieves active positions and availability status of officers and barricade depots."""
+    data = db_client.get_resources()
+    return {
+        "success": True,
         "data": data
     }

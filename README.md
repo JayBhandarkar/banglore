@@ -4,6 +4,13 @@ An AI-driven operations command center designed to forecast traffic incident sev
 
 ---
 
+## 🎥 Video Demo & Project Presentation
+
+* **Project Walkthrough Video**: [Google Drive Link](https://drive.google.com/drive/folders/14PGDBRONf3fNPzJlYER0cbmT6Rrj7d33?usp=drive_link)
+* **Project Presentation (PPT/PDF)**: [PPT.pdf](PPT.pdf)
+
+---
+
 ## 📂 Project Documentation Index
 
 For detailed, deep-dive architectural documents, deployment guides, and training methodology, please refer to the files in the **[docs/](file:///c:/Users/vbhan/Downloads/flipkart-hack/docs/)** directory:
